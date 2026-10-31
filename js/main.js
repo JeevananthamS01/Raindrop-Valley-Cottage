@@ -238,15 +238,30 @@
 
   document.getElementById("currentYear").textContent = new Date().getFullYear();
 
-  // FAQ accordion: each answer remains accessible through its controlling button.
-  document.querySelectorAll(".faq-question").forEach((button) => {
-    button.addEventListener("click", () => {
-      const item = button.closest(".faq-item");
-      const willOpen = button.getAttribute("aria-expanded") !== "true";
-      button.setAttribute("aria-expanded", String(willOpen));
-      item.classList.toggle("is-open", willOpen);
+ // FAQ accordion: only one answer can remain open at a time.
+document.addEventListener("DOMContentLoaded", function () {
+    const faqItems = document.querySelectorAll(".faq-item");
+
+    faqItems.forEach(function (item) {
+        const button = item.querySelector(".faq-question");
+
+        button.addEventListener("click", function () {
+            const willOpen = button.getAttribute("aria-expanded") !== "true";
+
+            faqItems.forEach(function (faq) {
+                const faqButton = faq.querySelector(".faq-question");
+
+                faq.classList.remove("is-open");
+                faqButton.setAttribute("aria-expanded", "false");
+            });
+
+            if (willOpen) {
+                item.classList.add("is-open");
+                button.setAttribute("aria-expanded", "true");
+            }
+        });
     });
-  });
+});
 
   // // Accessible gallery lightbox.
   // const lightbox = document.getElementById("lightbox");

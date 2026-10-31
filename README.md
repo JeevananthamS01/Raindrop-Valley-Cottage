@@ -66,7 +66,7 @@ The website is optimised for desktop, tablet, and mobile screen sizes, with resp
 
 This is a live client project developed for Rain Drop Valley View Cottage Stay.
 
-**Project Type:** Hospitality / Cottage Website  
+**Project Type:** Business Website / Accommodation Website 
 **Location:** Madikeri, Coorg, Karnataka, India  
 **Status:** Live
 

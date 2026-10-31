@@ -11,7 +11,7 @@
     <title>Raindrop | Valley View Cottage Stay</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="icon" type="image/png" href="./assets/img/favicon.jpeg">
+    <link rel="icon" type="image/png" href="./assets/img/favicon.jpeg" />
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
       rel="stylesheet"
@@ -1730,93 +1730,103 @@
               ></iframe>
             </div>
           </div>
+
           <form class="enquiry-form reveal" id="contactForm" novalidate>
             <div class="form-heading">
               <h3>Make an enquiry</h3>
               <p>Fields marked * are required.</p>
             </div>
+
             <div class="form-grid">
               <div class="form-field">
-                <label for="name">Full name *</label
-                ><input
+                <label for="name">Full name *</label>
+                <input
                   id="name"
                   name="name"
                   type="text"
                   autocomplete="name"
                   placeholder="Your name"
+                  maxlength="80"
                   required
-                /><small class="field-error"></small>
+                />
+                <small class="field-error"></small>
               </div>
+
               <div class="form-field">
-                <label for="email">Email address *</label
-                ><input
+                <label for="email">Gmail address *</label>
+                <input
                   id="email"
                   name="email"
                   type="email"
                   autocomplete="email"
-                  placeholder="you@example.com"
+                  placeholder="you@gmail.com"
+                  maxlength="254"
                   required
-                /><small class="field-error"></small>
+                />
+                <small class="field-error"></small>
               </div>
+
               <div class="form-field">
-                <label for="phone">Phone number *</label
-                ><input
+                <label for="phone">Phone number *</label>
+                <input
                   id="phone"
                   name="phone"
                   type="tel"
                   autocomplete="tel"
-                  placeholder="+91 9876543210"
+                  placeholder="+919876543210"
+                  maxlength="16"
                   required
-                /><small class="field-error"></small>
+                />
+                <small class="field-error"></small>
               </div>
+
               <div class="form-field">
-                <label for="guests">Number of guests *</label
-                ><input
+                <label for="guests">Number of guests *</label>
+                <input
                   id="guests"
                   name="guests"
                   type="number"
                   min="1"
                   max="30"
+                  step="1"
                   placeholder="e.g. 2"
                   required
-                /><small class="field-error"></small>
+                />
+                <small class="field-error"></small>
               </div>
+
               <div class="form-field">
-                <label for="checkin">Check-in date *</label
-                ><input
-                  id="checkin"
-                  name="checkin"
-                  type="date"
-                  required
-                /><small class="field-error"></small>
+                <label for="checkin">Check-in date *</label>
+                <input id="checkin" name="checkin" type="date" required />
+                <small class="field-error"></small>
               </div>
+
               <div class="form-field">
-                <label for="checkout">Check-out date *</label
-                ><input
-                  id="checkout"
-                  name="checkout"
-                  type="date"
-                  required
-                /><small class="field-error"></small>
+                <label for="checkout">Check-out date *</label>
+                <input id="checkout" name="checkout" type="date" required />
+                <small class="field-error"></small>
               </div>
+
               <div class="form-field full-field">
-                <label for="message">Message *</label
-                ><textarea
+                <label for="message">Message (Optional)</label>
+                <textarea
                   id="message"
                   name="message"
                   rows="4"
-                  placeholder="Tell us about your plans (at least 10 characters)"
-                  required
-                ></textarea
-                ><small class="field-error"></small>
+                  maxlength="1000"
+                  placeholder="Tell us about your plans (minimum 10 words if entered)"
+                ></textarea>
+                <small class="field-error"></small>
               </div>
             </div>
+
             <button
               class="water-button button-dark submit-button"
               type="submit"
             >
               Send enquiry <i class="fa-solid fa-arrow-right"></i>
             </button>
+
             <p
               class="form-status"
               id="formStatus"
@@ -1879,7 +1889,7 @@
         <p class="credit">
           Designed &amp; Developed by
           <a
-            href="https://dazzletechsolution.com/"
+            href="https://dazzletechsolutions.com/"
             target="_blank"
             rel="noopener"
             >Dazzle Tech Solution</a
@@ -2106,5 +2116,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js"></script>
     <script src="js/validation.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/script.js"></script>
   </body>
 </html>

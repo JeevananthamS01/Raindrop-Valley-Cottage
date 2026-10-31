@@ -1,158 +1,314 @@
-(() => {
-  "use strict";
+document.addEventListener("DOMContentLoaded", function () {
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOeQSj_2hRya2U44C8st8sew96guIbOKq8Tv-6sFa5XBeuhxbyA0pHRwZ2LepB8KVleQ/exec";
 
   const form = document.getElementById("contactForm");
   if (!form) return;
 
-  const fields = {
-    name: document.getElementById("name"),
-    email: document.getElementById("email"),
-    phone: document.getElementById("phone"),
-    guests: document.getElementById("guests"),
-    checkin: document.getElementById("checkin"),
-    checkout: document.getElementById("checkout"),
-    message: document.getElementById("message"),
-  };
   const status = document.getElementById("formStatus");
+  const submitButton = form.querySelector(".submit-button");
 
-  const patterns = {
-    name: /^[A-Za-zÀ-ÖØ-öø-ÿ ]{2,50}$/,
-    email:
-      /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/,
-    phone: /^(?:(?:\+91|91)[ -]?)?[6-9]\d{9}$/,
-    guests: /^[0-9]{1,2}$/,
-    message: /^[\s\S]{10,1500}$/,
-  };
+  const nameInput = form.querySelector("#name");
+  const emailInput = form.querySelector("#email");
+  const phoneInput = form.querySelector("#phone");
+  const guestsInput = form.querySelector("#guests");
+  const checkinInput = form.querySelector("#checkin");
+  const checkoutInput = form.querySelector("#checkout");
+  const messageInput = form.querySelector("#message");
 
-  const todayLocal = () => {
-    const now = new Date();
-    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 10);
-  };
+  let statusTimer;
 
-  fields.checkin.min = todayLocal();
-  fields.checkout.min = todayLocal();
+  const today = new Date();
+  const localToday = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, "0"),
+    String(today.getDate()).padStart(2, "0"),
+  ].join("-");
 
-  function validateField(key) {
-    const field = fields[key];
-    const value = field.value.trim();
-    let message = "";
+  checkinInput.min = localToday;
+  checkoutInput.min = localToday;
 
-    switch (key) {
-      case "name":
-        if (!value) message = "Please enter your name.";
-        else if (!patterns.name.test(value))
-          message =
-            "Use 2–50 characters with letters and spaces (basic punctuation is allowed).";
-        break;
-      case "email":
-        if (!value) message = "Please enter your email address.";
-        else if (!patterns.email.test(value))
-          message = "Please enter a valid email address.";
-        break;
-      case "phone":
-        if (!value) message = "Please enter your phone number.";
-        else if (!patterns.phone.test(value.replace(/\s+/g, " ").trim()))
-          message =
-            "Enter a valid 10-digit Indian mobile number, optionally with +91.";
-        break;
-      case "guests": {
-        const guests = Number(value);
-        if (!value) message = "Please enter the number of guests.";
-        else if (
-          !patterns.guests.test(value) ||
-          !Number.isInteger(guests) ||
-          guests < 1 ||
-          guests > 30
-        )
-          message = "Enter a whole number between 1 and 30.";
-        break;
-      }
-      case "checkin":
-        if (!value) message = "Please choose a check-in date.";
-        else if (value < todayLocal())
-          message = "Check-in cannot be in the past.";
-        if (fields.checkout.value && value && fields.checkout.value <= value) {
-          setFieldState("checkout", "Check-out must be after check-in.");
-        } else if (fields.checkout.value) {
-          setFieldState("checkout", "");
-        }
-        if (value) fields.checkout.min = value;
-        break;
-      case "checkout":
-        if (!value) message = "Please choose a check-out date.";
-        else if (value < todayLocal())
-          message = "Check-out cannot be in the past.";
-        else if (fields.checkin.value && value <= fields.checkin.value)
-          message = "Check-out must be after check-in.";
-        break;
-      case "message":
-        if (!value) message = "Please add a message.";
-        else if (value.length < 10)
-          message = "Please enter at least 10 characters.";
-        else if (value.length > 1500)
-          message = "Please keep your message under 1,500 characters.";
-        else if (
-          /<\/?[a-z][\s\S]*?>|javascript:|data:text\/html|onerror\s*=|onload\s*=/i.test(
-            value,
-          )
-        )
-          message = "Please remove HTML, script, or unsafe content.";
-        break;
-      default:
-        break;
+  function showStatus(message, color) {
+    clearTimeout(statusTimer);
+
+    status.textContent = message;
+    status.style.color = color;
+
+    statusTimer = setTimeout(function () {
+      status.textContent = "";
+    }, 5000);
+  }
+
+  function getErrorElement(input) {
+    return input.closest(".form-field")?.querySelector(".field-error");
+  }
+
+  function showError(input, message) {
+    const error = getErrorElement(input);
+
+    if (error) error.textContent = message;
+
+    input.classList.add("invalid");
+    input.setAttribute("aria-invalid", "true");
+  }
+
+  function clearError(input) {
+    const error = getErrorElement(input);
+
+    if (error) error.textContent = "";
+
+    input.classList.remove("invalid");
+    input.removeAttribute("aria-invalid");
+  }
+
+  function validateName() {
+    const value = nameInput.value.trim();
+
+    if (!value) {
+      showError(nameInput, "Full name is required.");
+      return false;
     }
 
-    setFieldState(key, message);
-    return !message;
+    if (value.length < 2 || value.length > 80) {
+      showError(nameInput, "Name must contain 2 to 80 characters.");
+      return false;
+    }
+
+    if (!/^\p{L}+(?:[ '-]\p{L}+)*$/u.test(value)) {
+      showError(
+        nameInput,
+        "Use letters only. Numbers and special characters are not allowed.",
+      );
+      return false;
+    }
+
+    clearError(nameInput);
+    return true;
   }
 
-  function setFieldState(key, message) {
-    const field = fields[key];
-    const wrapper = field.closest(".form-field");
-    const error = wrapper.querySelector(".field-error");
-    error.textContent = message;
-    wrapper.classList.toggle("is-invalid", Boolean(message));
-    wrapper.classList.toggle(
-      "is-valid",
-      !message && field.value.trim().length > 0,
-    );
-    field.setAttribute("aria-invalid", String(Boolean(message)));
+  function validateEmail() {
+    const value = emailInput.value.trim();
+
+    if (!value) {
+      showError(emailInput, "Gmail address is required.");
+      return false;
+    }
+
+    const gmailPattern =
+      /^[a-zA-Z0-9](?:[a-zA-Z0-9._+-]*[a-zA-Z0-9])?@gmail\.com$/i;
+
+    if (value.length > 254 || !gmailPattern.test(value)) {
+      showError(
+        emailInput,
+        "Enter a valid Gmail address ending in @gmail.com.",
+      );
+      return false;
+    }
+
+    clearError(emailInput);
+    return true;
   }
 
-  Object.entries(fields).forEach(([key, field]) => {
-    field.addEventListener("input", () => {
-      validateField(key);
-      status.textContent = "";
-      status.className = "form-status";
-    });
-    field.addEventListener("blur", () => validateField(key));
-    field.addEventListener("change", () => validateField(key));
+  function validatePhone() {
+    const value = phoneInput.value.trim();
+
+    if (!value) {
+      showError(phoneInput, "Phone number is required.");
+      return false;
+    }
+
+    if (!/^\+[1-9]\d{7,14}$/.test(value)) {
+      showError(
+        phoneInput,
+        "Enter a valid country code and number, e.g. +919876543210. No spaces or letters.",
+      );
+      return false;
+    }
+
+    clearError(phoneInput);
+    return true;
+  }
+
+  function validateGuests() {
+    const value = guestsInput.value.trim();
+
+    if (!value) {
+      showError(guestsInput, "Number of guests is required.");
+      return false;
+    }
+
+    if (!/^(?:[1-9]|[12]\d|30)$/.test(value)) {
+      showError(guestsInput, "Enter a whole number between 1 and 30.");
+      return false;
+    }
+
+    clearError(guestsInput);
+    return true;
+  }
+
+  function validateCheckin() {
+    const value = checkinInput.value;
+
+    if (!value) {
+      showError(checkinInput, "Check-in date is required.");
+      return false;
+    }
+
+    if (value < localToday) {
+      showError(checkinInput, "Check-in date cannot be in the past.");
+      return false;
+    }
+
+    clearError(checkinInput);
+    return true;
+  }
+
+  function validateCheckout() {
+    const value = checkoutInput.value;
+
+    if (!value) {
+      showError(checkoutInput, "Check-out date is required.");
+      return false;
+    }
+
+    if (!checkinInput.value) {
+      showError(checkoutInput, "Please select your check-in date first.");
+      return false;
+    }
+
+    if (value <= checkinInput.value) {
+      showError(checkoutInput, "Check-out must be after check-in.");
+      return false;
+    }
+
+    clearError(checkoutInput);
+    return true;
+  }
+
+  function validateMessage() {
+    const value = messageInput.value.trim();
+
+    if (!value) {
+      clearError(messageInput);
+      return true;
+    }
+
+    if (value.length > 1000) {
+      showError(messageInput, "Message cannot exceed 1000 characters.");
+      return false;
+    }
+
+    const words = value.split(/\s+/).filter(Boolean);
+
+    if (words.length < 10) {
+      showError(messageInput, "Please enter at least 10 words.");
+      return false;
+    }
+
+    if (
+      /<[^>]*>|javascript:|data:text\/html|onerror\s*=|onload\s*=/i.test(value)
+    ) {
+      showError(messageInput, "Please enter a valid message.");
+      return false;
+    }
+
+    clearError(messageInput);
+    return true;
+  }
+
+  nameInput.addEventListener("input", validateName);
+  emailInput.addEventListener("input", validateEmail);
+  phoneInput.addEventListener("input", validatePhone);
+  guestsInput.addEventListener("input", validateGuests);
+  messageInput.addEventListener("input", validateMessage);
+
+  checkinInput.addEventListener("change", function () {
+    checkoutInput.min = checkinInput.value || localToday;
+
+    validateCheckin();
+
+    if (checkoutInput.value) {
+      validateCheckout();
+    }
   });
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const results = Object.keys(fields).map(validateField);
-    const isValid = results.every(Boolean);
+  checkoutInput.addEventListener("change", validateCheckout);
 
-    if (!isValid) {
-      status.textContent =
-        "Please correct the highlighted fields and try again.";
-      status.className = "form-status error";
-      const firstInvalid = form.querySelector('[aria-invalid="true"]');
-      firstInvalid?.focus();
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    clearTimeout(statusTimer);
+    status.textContent = "";
+
+    const validations = [
+      validateName(),
+      validateEmail(),
+      validatePhone(),
+      validateGuests(),
+      validateCheckin(),
+      validateCheckout(),
+      validateMessage(),
+    ];
+
+    if (validations.includes(false)) {
+      showStatus("Please correct the highlighted fields.", "#dc3545");
+
+      form.querySelector(".invalid")?.focus();
       return;
     }
 
-    // Front-end demo only. Connect an API/email service to deliver this enquiry.
-    const enquiry = Object.fromEntries(new FormData(form).entries());
-    console.info("Validated cottage enquiry (demo only):", enquiry);
-    form.reset();
-    fields.checkin.min = todayLocal();
-    fields.checkout.min = todayLocal();
-    Object.keys(fields).forEach((key) => setFieldState(key, ""));
-    status.textContent =
-      "Thank you! Your details passed validation. This demo does not send the enquiry yet; connect a backend or email service to receive bookings.";
-    status.className = "form-status success";
+    if (!SCRIPT_URL || SCRIPT_URL === "YOUR_DEPLOYED_WEB_APP_URL") {
+      showStatus("Form submission URL is not configured.", "#dc3545");
+      return;
+    }
+
+    const enquiryData = {
+      name: nameInput.value.trim(),
+      email: emailInput.value.trim(),
+      phone: phoneInput.value.trim(),
+      guests: guestsInput.value.trim(),
+      checkin: checkinInput.value,
+      checkout: checkoutInput.value,
+      message: messageInput.value.trim(),
+      isTrue: true
+    };
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Sending enquiry...";
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8",
+        },
+        body: JSON.stringify(enquiryData),
+      });
+
+      form.reset();
+
+      checkinInput.min = localToday;
+      checkoutInput.min = localToday;
+
+      form.querySelectorAll(".field-error").forEach(function (error) {
+        error.textContent = "";
+      });
+
+      form.querySelectorAll(".invalid").forEach(function (input) {
+        input.classList.remove("invalid");
+        input.removeAttribute("aria-invalid");
+      });
+
+      showStatus(
+        "Your enquiry has been submitted. We will contact you soon.",
+        "#16803c",
+      );
+    } catch (error) {
+      showStatus("Unable to send your enquiry. Please try again.", "#dc3545");
+    } finally {
+      submitButton.disabled = false;
+      submitButton.innerHTML =
+        'Send enquiry <i class="fa-solid fa-arrow-right"></i>';
+    }
   });
-})();
+});

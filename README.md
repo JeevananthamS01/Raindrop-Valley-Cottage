@@ -75,5 +75,3 @@ This is a live client project developed for Rain Drop Valley View Cottage Stay.
 This repository contains the source code developed for Rain Drop Valley View Cottage Stay. Project assets, branding, and content belong to their respective owners.
 
 ---
-
-Developed for Rain Drop Valley View Cottage Stay.
